@@ -1,0 +1,11 @@
+{
+  "name": "workflow-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "fastify": "^4.24.0",
+    "amqplib": "^0.10.3",
+    "neo4j-driver": "^5.14.0",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.0"
+  }
+}

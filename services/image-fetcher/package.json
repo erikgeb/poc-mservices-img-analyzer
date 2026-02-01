@@ -1,0 +1,11 @@
+{
+  "name": "image-fetcher",
+  "version": "1.0.0",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "neo4j-driver": "^5.14.0",
+    "sharp": "^0.33.0",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.0"
+  }
+}
