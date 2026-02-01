@@ -61,6 +61,20 @@ curl http://localhost:3000/workflows/<workflowId>
 
 Verify via: MailHog (http://localhost:8025), Neo4j Browser (http://localhost:7474), MinIO Console (http://localhost:9001), RabbitMQ Management (http://localhost:15672).
 
+### Unit tests
+
+**After modifying a service, always run its unit tests before considering the change complete.**
+
+Node.js services (Jest):
+```bash
+cd services/<name> && npm test
+```
+
+Python services (pytest):
+```bash
+cd services/<name> && python -m pytest tests/
+```
+
 ## Gotchas
 
 - The object-detection service downloads the YOLOv8 nano model on first run — the initial build/start is slow.

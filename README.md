@@ -114,6 +114,26 @@ curl http://localhost:3000/workflows/<workflowId>
    ```
 3. Browse **MinIO** at http://localhost:9001 for the annotated image in the `images` bucket
 
+## Running Tests
+
+Each service has unit tests that run on the host (no Docker required).
+
+**Node.js services** (workflow-api, image-fetcher, storage-service, notification-service):
+
+```bash
+cd services/<name>
+npm install   # first time only
+npm test
+```
+
+**Python services** (metadata-extractor, object-detection, image-annotator):
+
+```bash
+cd services/<name>
+pip install -r requirements.txt   # first time only
+python -m pytest tests/
+```
+
 ## Event Envelope
 
 All events follow this schema:

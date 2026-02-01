@@ -3,3 +3,4 @@ neo4j==5.14.1
 Pillow==10.1.0
 numpy<2
 opencv-python-headless==4.8.1.78
+pytest==7.4.3
