@@ -2,6 +2,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const EXCHANGE = 'imageanalyzer.events';
+const USER_AGENT = 'ImageAnalyzer/1.0';
 
 async function recordEvent(driver, event, prevEventType, workflowId) {
   const session = driver.session();
@@ -30,6 +31,7 @@ async function fetchAndProcessImage({ axios, sharp, fs, imageUrl, workflowId, im
     responseType: 'arraybuffer',
     maxContentLength: 10 * 1024 * 1024,
     timeout: 30000,
+    headers: { 'User-Agent': USER_AGENT },
   });
 
   const filename = `${workflowId}.jpg`;

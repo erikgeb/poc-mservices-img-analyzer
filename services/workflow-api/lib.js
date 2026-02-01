@@ -35,16 +35,18 @@ async function recordEvent(driver, event, prevEventId) {
   }
 }
 
+const USER_AGENT = 'ImageAnalyzer/1.0';
+
 async function validateImageUrl(axios, imageUrl) {
   let ct;
   try {
-    const head = await axios.head(imageUrl, { timeout: 5000, maxRedirects: 5 });
+    const head = await axios.head(imageUrl, { timeout: 5000, maxRedirects: 5, headers: { 'User-Agent': USER_AGENT } });
     ct = head.headers['content-type'] || '';
   } catch {
     const partial = await axios.get(imageUrl, {
       timeout: 5000,
       maxRedirects: 5,
-      headers: { Range: 'bytes=0-0' },
+      headers: { Range: 'bytes=0-0', 'User-Agent': USER_AGENT },
       responseType: 'arraybuffer',
     });
     ct = partial.headers['content-type'] || '';
