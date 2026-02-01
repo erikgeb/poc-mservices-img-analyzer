@@ -72,6 +72,7 @@ A `Makefile` provides shortcuts for common operations:
 
 | Command | Description |
 |---|---|
+| `make venv` | Create a Python virtual environment (`.venv/`) |
 | `make install` | Install dependencies for all services |
 | `make test` | Run unit tests for all services |
 | `make up` | Build and start all containers |
@@ -152,9 +153,11 @@ npm test
 
 **Python services** (metadata-extractor, object-detection, image-annotator):
 
+The Makefile manages a `.venv/` virtual environment automatically. To run manually:
+
 ```bash
+source .venv/bin/activate        # after make install
 cd services/<name>
-pip install -r requirements.txt   # first time only
 python -m pytest tests/
 ```
 

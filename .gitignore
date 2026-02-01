@@ -5,3 +5,4 @@ data/images/*
 !data/images/.gitkeep
 .env
 *.log
+.venv/

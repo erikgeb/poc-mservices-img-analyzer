@@ -70,9 +70,9 @@ Node.js services (Jest):
 cd services/<name> && npm test
 ```
 
-Python services (pytest):
+Python services (pytest — uses the `.venv/` virtual environment managed by the Makefile):
 ```bash
-cd services/<name> && python -m pytest tests/
+.venv/bin/python -m pytest services/<name>/tests/
 ```
 
 ## Gotchas
