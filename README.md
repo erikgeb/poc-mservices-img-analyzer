@@ -52,7 +52,7 @@ POST /workflows
 
 ## Infrastructure
 
-- **RabbitMQ** 3.12 — message broker (topic exchange `imageanalyzer.events`)
+- **RabbitMQ** 4.2 — message broker (topic exchange `imageanalyzer.events`)
 - **Neo4j** 5.x — event lineage and workflow tracking
 - **MinIO** — S3-compatible object storage for annotated images
 - **MailHog** — local SMTP server for email testing

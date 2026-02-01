@@ -8,7 +8,7 @@ Event-driven microservices PoC: an image analysis pipeline using RabbitMQ for me
 
 - **Node.js services** (workflow-api, image-fetcher, storage-service, notification-service): plain JS, no TypeScript, no build step. Dependencies: amqplib, neo4j-driver, fastify (API only), sharp, minio, nodemailer, axios, uuid.
 - **Python services** (metadata-extractor, object-detection, image-annotator): Python 3.11, no frameworks. Dependencies: pika, neo4j, Pillow, exifread, ultralytics (YOLO), opencv-python-headless.
-- **Infrastructure**: Docker Compose with RabbitMQ 3.12, Neo4j 5.x, MinIO, MailHog.
+- **Infrastructure**: Docker Compose with RabbitMQ 4.2, Neo4j 5.x, MinIO, MailHog.
 
 ## Key Architectural Patterns
 
