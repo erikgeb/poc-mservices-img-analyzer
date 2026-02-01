@@ -66,7 +66,17 @@ POST /workflows
 ### Run
 
 ```bash
-docker-compose up --build
+docker compose up --build
+```
+
+If you see a warning about buildx/Bake not being installed, disable it:
+
+```bash
+# One-off
+COMPOSE_BAKE=false docker compose up --build
+
+# Or permanently
+docker config set composeUseBuildxBake false
 ```
 
 Wait for all health checks to pass (RabbitMQ and Neo4j take the longest).
