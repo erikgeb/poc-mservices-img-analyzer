@@ -136,6 +136,7 @@ services:
       MINIO_PORT: "9000"
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      MINIO_PUBLIC_URL: http://localhost:9000
     depends_on:
       rabbitmq:
         condition: service_healthy

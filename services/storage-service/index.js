@@ -22,6 +22,19 @@ const minioClient = new Minio.Client({
   secretKey: process.env.MINIO_SECRET_KEY,
 });
 
+// Separate client for presigned URLs only — signs with the public hostname so
+// the browser's Host header matches the signature. Setting region avoids a
+// getBucketRegion network call (which would fail against localhost from inside the container).
+const publicUrl = new URL(process.env.MINIO_PUBLIC_URL || 'http://localhost:9000');
+const minioPresignClient = new Minio.Client({
+  endPoint: publicUrl.hostname,
+  port: parseInt(publicUrl.port) || 9000,
+  useSSL: publicUrl.protocol === 'https:',
+  accessKey: process.env.MINIO_ACCESS_KEY,
+  secretKey: process.env.MINIO_SECRET_KEY,
+  region: 'us-east-1',
+});
+
 async function recordEvent(event, prevEventType) {
   const session = driver.session();
   try {
@@ -71,7 +84,7 @@ async function start() {
     console.log(`Uploading ${filename} to MinIO`);
     try {
       await minioClient.fPutObject(BUCKET, objectKey, filepath);
-      const presignedUrl = await minioClient.presignedGetObject(BUCKET, objectKey, 7 * 24 * 60 * 60);
+      const presignedUrl = await minioPresignClient.presignedGetObject(BUCKET, objectKey, 7 * 24 * 60 * 60);
 
       const outEvent = {
         eventId: uuidv4(),
