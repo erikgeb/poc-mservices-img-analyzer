@@ -56,10 +56,21 @@ fastify.post('/workflows', async (req, reply) => {
     return reply.code(400).send({ error: 'imageUrl and email are required' });
   }
 
-  // HEAD check
+  // Validate image URL — try HEAD first, fall back to partial GET (some hosts block HEAD or return 405 on redirects)
   try {
-    const head = await axios.head(imageUrl, { timeout: 5000 });
-    const ct = head.headers['content-type'] || '';
+    let ct;
+    try {
+      const head = await axios.head(imageUrl, { timeout: 5000, maxRedirects: 5 });
+      ct = head.headers['content-type'] || '';
+    } catch {
+      const partial = await axios.get(imageUrl, {
+        timeout: 5000,
+        maxRedirects: 5,
+        headers: { Range: 'bytes=0-0' },
+        responseType: 'arraybuffer',
+      });
+      ct = partial.headers['content-type'] || '';
+    }
     if (!ct.startsWith('image/')) {
       return reply.code(400).send({ error: `Not an image content-type: ${ct}` });
     }
