@@ -63,6 +63,30 @@ POST /workflows
 ### Prerequisites
 
 - Docker and Docker Compose
+- Node.js and npm (for local development and tests)
+- Python 3.11+ and pip (for local development and tests)
+
+### Makefile
+
+A `Makefile` provides shortcuts for common operations:
+
+| Command | Description |
+|---|---|
+| `make install` | Install dependencies for all services |
+| `make test` | Run unit tests for all services |
+| `make up` | Build and start all containers |
+| `make down` | Stop and remove containers |
+| `make logs` | Tail container logs |
+| `make clean` | Stop containers and remove volumes |
+| `make trigger` | Trigger a sample workflow |
+
+You can also target a specific stack: `make install-node`, `make install-python`, `make test-node`, `make test-python`.
+
+The `trigger` target accepts optional overrides:
+
+```bash
+make trigger URL=https://example.com/photo.jpg EMAIL=me@example.com
+```
 
 ### Run
 
