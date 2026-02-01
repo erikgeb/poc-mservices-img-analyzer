@@ -41,19 +41,49 @@ def record_event(event, prev_event_types):
             )
 
 
+def _load_font(size):
+    """Load a TrueType font, falling back to the default bitmap font."""
+    for path in [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]:
+        if os.path.exists(path):
+            return ImageFont.truetype(path, size)
+    return ImageFont.load_default()
+
+
+def _draw_text_with_bg(draw, xy, text, font, fill=(255, 255, 255), bg=(0, 0, 0, 160), padding=4):
+    """Draw text with a semi-transparent background rectangle."""
+    bbox = draw.textbbox(xy, text, font=font)
+    # bbox is (left, top, right, bottom)
+    draw.rectangle(
+        [bbox[0] - padding, bbox[1] - padding, bbox[2] + padding, bbox[3] + padding],
+        fill=bg,
+    )
+    draw.text(xy, text, font=font, fill=fill)
+
+
 def annotate(workflow_id, metadata, detections, filename):
     filepath = os.path.join(IMAGES_DIR, filename)
-    img = cv2.imread(filepath)
-    if img is None:
+    try:
+        img = Image.open(filepath).convert('RGBA')
+    except Exception:
         print(f"Cannot read image {filepath}")
         return None
 
-    # Draw bounding boxes
+    overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    label_font = _load_font(16)
+    exif_font = _load_font(14)
+
+    # Draw bounding boxes + labels
     for det in detections:
         x1, y1, x2, y2 = [int(v) for v in det['bbox']]
-        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        draw.rectangle([x1, y1, x2, y2], outline=(0, 255, 0, 255), width=2)
         label = f"{det['label']} {det['confidence']:.2f}"
-        cv2.putText(img, label, (x1, y1 - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        _draw_text_with_bg(draw, (x1, y1 - 22), label, label_font,
+                           fill=(255, 255, 255, 255), bg=(0, 180, 0, 180))
 
     # EXIF summary overlay (top-left)
     exif = metadata.get('exif', {})
@@ -64,14 +94,16 @@ def annotate(workflow_id, metadata, detections, filename):
     if not summary_lines:
         summary_lines.append("No EXIF data")
 
-    y_offset = 20
+    y_offset = 10
     for line in summary_lines:
-        cv2.putText(img, line, (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        y_offset += 20
+        _draw_text_with_bg(draw, (10, y_offset), line, exif_font,
+                           fill=(255, 255, 255, 255), bg=(0, 0, 0, 160))
+        y_offset += 24
 
+    img = Image.alpha_composite(img, overlay).convert('RGB')
     out_filename = f"{workflow_id}_annotated.jpg"
     out_path = os.path.join(IMAGES_DIR, out_filename)
-    cv2.imwrite(out_path, img)
+    img.save(out_path, 'JPEG', quality=92)
     return out_filename
 
 
