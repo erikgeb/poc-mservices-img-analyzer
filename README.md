@@ -6,36 +6,37 @@ A proof-of-concept microservices architecture that processes images through an e
 
 ```
 POST /workflows
-      │
-      ▼
-┌─────────────┐  workflow.started  ┌───────────────┐  image.fetched  ┌────────────────────┐
-│ Workflow API │──────────────────▶│ Image Fetcher  │───────┬────────▶│ Metadata Extractor │
-│  (Node.js)   │                   │   (Node.js)    │       │         │     (Python)        │
-└─────────────┘                   └───────────────┘       │         └────────┬───────────┘
-                                                           │                  │
-                                                           │                  ▼
-                                                           │         ┌────────────────────┐
-                                                           └────────▶│ Object Detection   │
-                                                                     │  (Python/YOLOv8)   │
-                                                                     └────────┬───────────┘
-                                                                              │
-                                                                              ▼
-                                                                     ┌────────────────────┐
-                                                                     │ Image Annotator     │◀── fan-in (waits for both)
-                                                                     │     (Python)        │
-                                                                     └────────┬───────────┘
-                                                                              │
-                                                                              ▼
-                                                                     ┌────────────────────┐
-                                                                     │ Storage Service     │
-                                                                     │  (Node.js/MinIO)   │
-                                                                     └────────┬───────────┘
-                                                                              │
-                                                                              ▼
-                                                                     ┌────────────────────┐
-                                                                     │ Notification Svc   │
-                                                                     │ (Node.js/MailHog)  │
-                                                                     └────────────────────┘
+       │
+       ▼
+┌────────────────┐ workflow.started ┌────────────────┐ image.fetched ┌──────────────────────┐
+│  Workflow API  │────────────────▶ │  Image Fetcher │──────┬───────▶│ Metadata Extractor   │
+│   (Node.js)    │                  │    (Node.js)   │      │        │       (Python)       │
+└────────────────┘                  └────────────────┘      │        └──────────┬───────────┘
+                                                            │                   │
+                                                            │                   │ metadata_extracted
+                                                            │                   ▼
+                                                            │        ┌──────────────────────┐
+                                                            └───────▶│  Object Detection    │
+                                                                     │   (Python/YOLOv8)    │
+                                                                     └──────────┬───────────┘
+                                                                                │ objects_detected
+                                                                                ▼
+                                                                     ┌──────────────────────┐
+                                                                     │  Image Annotator     │◀── fan-in
+                                                                     │       (Python)       │
+                                                                     └──────────┬───────────┘
+                                                                                │ image.annotated
+                                                                                ▼
+                                                                     ┌──────────────────────┐
+                                                                     │  Storage Service     │
+                                                                     │  (Node.js / MinIO)   │
+                                                                     └──────────┬───────────┘
+                                                                                │ image.stored
+                                                                                ▼
+                                                                     ┌──────────────────────┐
+                                                                     │ Notification Service │
+                                                                     │ (Node.js / MailHog)  │
+                                                                     └──────────────────────┘
 ```
 
 ## Services
