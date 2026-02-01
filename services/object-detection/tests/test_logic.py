@@ -1,7 +1,7 @@
 import json
 from unittest.mock import MagicMock
 
-from logic import detect_objects, record_event, handle_message, MAX_DETECTIONS
+from logic import detect_objects, record_event, record_entities, handle_message, MAX_DETECTIONS
 
 
 def _make_box(cls_id, conf, bbox):
@@ -61,6 +61,32 @@ class TestRecordEvent:
         assert session.run.call_count == 2
 
 
+class TestRecordEntities:
+    def _make_driver(self):
+        session = MagicMock()
+        driver = MagicMock()
+        driver.session.return_value.__enter__ = MagicMock(return_value=session)
+        driver.session.return_value.__exit__ = MagicMock(return_value=False)
+        return driver, session
+
+    def test_records_each_detection(self):
+        driver, session = self._make_driver()
+        detections = [
+            {'label': 'cat', 'confidence': 0.95, 'bbox': [10.0, 20.0, 100.0, 200.0]},
+            {'label': 'dog', 'confidence': 0.80, 'bbox': [50.0, 60.0, 150.0, 250.0]},
+        ]
+        record_entities(driver, 'wf-1', detections)
+        assert session.run.call_count == 2
+        for call_args in session.run.call_args_list:
+            assert 'MERGE (e:Entity {label: $label})' in call_args[0][0]
+            assert 'DETECTED' in call_args[0][0]
+
+    def test_empty_detections_no_calls(self):
+        driver, session = self._make_driver()
+        record_entities(driver, 'wf-1', [])
+        session.run.assert_not_called()
+
+
 class TestHandleMessage:
     def test_processes_message(self, tmp_path):
         ch = MagicMock()
@@ -89,6 +115,8 @@ class TestHandleMessage:
         assert len(result['payload']['detections']) == 1
         ch.basic_publish.assert_called_once()
         ch.basic_ack.assert_called_once_with(delivery_tag='tag-1')
+        # record_event (2 calls) + record_entities (1 detection = 1 call)
+        assert session.run.call_count == 3
 
     def test_event_envelope_structure(self, tmp_path):
         ch = MagicMock()

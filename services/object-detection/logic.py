@@ -26,6 +26,21 @@ def record_event(neo4j_driver, event, prev_event_type):
             )
 
 
+def record_entities(neo4j_driver, workflow_id, detections):
+    if not detections:
+        return
+    with neo4j_driver.session() as session:
+        for det in detections:
+            session.run(
+                "MERGE (e:Entity {label: $label}) "
+                "WITH e "
+                "MATCH (w:Workflow {id: $wid}) "
+                "CREATE (w)-[:DETECTED {confidence: $conf, bbox: $bbox}]->(e)",
+                label=det['label'], wid=workflow_id,
+                conf=det['confidence'], bbox=det['bbox']
+            )
+
+
 def detect_objects(filepath, model):
     results = model(filepath, verbose=False)
     detections = []
@@ -64,5 +79,6 @@ def handle_message(ch, method, body, neo4j_driver, model, images_dir=None):
     ch.basic_publish(exchange=EXCHANGE, routing_key='image.objects_detected',
                      body=json.dumps(out_event))
     record_event(neo4j_driver, out_event, 'image.fetched')
+    record_entities(neo4j_driver, workflow_id, detections)
     ch.basic_ack(delivery_tag=method.delivery_tag)
     return out_event
